@@ -1,51 +1,87 @@
 import os, sys
 from bs4 import BeautifulSoup
 import requests
+from tkinter import *
 
-print("*+++++++++++++++++++++++++++++++++++++++++*")
-print("*Welcome to the lazy man's image searcher.*")
-print("* Where do you want to search?            *")
-print("* 1 - Unsplash                            *")
-print("* 2 - Pexels                              *")
-print("*+++++++++++++++++++++++++++++++++++++++++*")
-engine = input("\n")
-r0 = ""
-if engine == "1":
-    print("Unsplash selected!")
-    choice = input("\nWhat is your search term?\n")
-    r0 = "https://unsplash.com/search/photos/" + choice
-elif engine == "2":
-    print("Pexels selected!")
-    choice = input("\nWhat is your search term?\n")
-    r0 = "https://www.pexels.com/search/" + choice
-else:
-    print("Select a valid choice!")
+def retrieve_input():
+    namedir = T.get("1.0","end-1c")
+    return namedir
+
+def getpicsus():
+    dirname = retrieve_input()
+    r0 = "https://unsplash.com/search/photos/" + dirname
+    r = requests.get(r0)
+    html_doc = r.content
+    soup = BeautifulSoup(html_doc, "html.parser")
+
+    imagetags = soup.findAll("img", {"class":"_2zEKz"})
+
+    original = os.getcwd()
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    os.chdir(dirname)
+
+    x = 0
+
+    for image in imagetags:
+        try:
+            url = image['src']
+            source = requests.get(url)
+            if source.status_code == 200:
+                with open("us " + dirname + " - " + str(x) + ".jpg", "wb") as f:
+                    f.write(requests.get(url).content)
+                    f.close()
+                    x += 1
+        except:
+            pass
+    os.chdir(original)
+
+def getpicspx():
+    dirname = retrieve_input()
+    r0 = "https://www.pexels.com/search/" + dirname
+    r = requests.get(r0)
+    html_doc = r.content
+    soup = BeautifulSoup(html_doc, "html.parser")
+
+    imagetags = soup.findAll("img", {"class":"photo-item__img"})
+
+    original = os.getcwd()
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+
+    os.chdir(dirname)
+
+    x = 0
+
+    for image in imagetags:
+        try:
+            url = image['src']
+            source = requests.get(url)
+            if source.status_code == 200:
+                with open("px " + dirname + " - " + str(x) + ".jpg", "wb") as f:
+                    f.write(requests.get(url).content)
+                    f.close()
+                    x += 1
+        except:
+            pass
+    os.chdir(original)
 
 
-r = requests.get(r0)
-html_doc = r.content
-soup = BeautifulSoup(html_doc, "html.parser")
 
-imagetags = soup.findAll("img")
+root = Tk()
+root.title("Lazy Man's Image Scraper")
+lbl = Label(root, text="Input your desired search term in the text box, and pick the source.")
+lbl.pack()
+root.geometry('500x300')
 
-if not os.path.exists(choice):
-    os.makedirs(choice)
+T = Text(root, height=1, width=30)
+T.pack()
+unsplash = Button(root, text = "Search Unsplash", command = getpicsus)
+pexels = Button(root, text = "Search Pexels", command = getpicspx)
+unsplash.pack()
+pexels.pack()
 
-os.chdir(choice)
 
-x = 0
 
-print("Downloading images...")
-for image in imagetags:
-    try:
-        url = image['src']
-        source = requests.get(url)
-        if source.status_code == 200:
-            with open(choice + " - " + str(x) + ".jpg", "wb") as f:
-                f.write(requests.get(url).content)
-                f.close()
-                x += 1
-    except:
-        pass
 
-print("Done!")
+root.mainloop()
