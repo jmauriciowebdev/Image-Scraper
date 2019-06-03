@@ -14,7 +14,7 @@ if engine == "1":
     print("Unsplash selected!")
     choice = input("\nWhat is your search term?\n")
     r0 = "https://unsplash.com/search/photos/" + choice
-if engine == "2":
+elif engine == "2":
     print("Pexels selected!")
     choice = input("\nWhat is your search term?\n")
     r0 = "https://www.pexels.com/search/" + choice
